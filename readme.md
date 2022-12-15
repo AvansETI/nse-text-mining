@@ -23,7 +23,7 @@ Clone this repo and open the directory. Then execute the folowing command: `pipe
 Clone this repo and open the directory. TODO: add more
 
 ## 1.3. Starting the application
-To run the app simply execute `streamlit run ./src/app.py`
+To run the app simply execute `streamlit run ./src/main.py`
 
 ## 1.4. Creating a new page
 
