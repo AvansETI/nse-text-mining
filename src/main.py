@@ -49,10 +49,11 @@ def draw_preprocessing():
                                     'Opleidingsvorm (vt dt du)', 'Academie', 'Studiejaar volgens instelling',
                                     'Kunstopleiding', 'Afstandsonderwijs',
                                     ], exclude=True)
+        st.session_state['cleaned_data'] = cleaned_data
 
     with st.expander('Cleaning the data'):
-        st.caption("""In this step all empty values are set to \'empty\',
-            punctuation is removed, text is converted to lower case and the text is checked for spelling errors.""")
+        st.caption("""In this step all empty values are set to \'empty_field\',
+            punctuation is removed and the text is converted to lower case.""")
 
         # Only continue drawing after the data is processed
         if cleaned_data is not None:

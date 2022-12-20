@@ -7,12 +7,9 @@ def run():
 
     st.header('An example text for analysis one page')
 
-    # this is needed to get the data_file from the session storage.
-    # The StringIO converts the stored string to a file pandas can use.
-    if 'data_file' in st.session_state:
-        file = StringIO(st.session_state['data_file'])
+    if 'cleaned_data' in st.session_state:
+        df = st.session_state['cleaned_data']
 
-        df = pd.read_csv(file)
         st.write(df)
 
 

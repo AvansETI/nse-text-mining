@@ -20,7 +20,11 @@ There are several ways of setting up the invironment depending on the OS you use
 Clone this repo and open the directory. Then execute the folowing command: `pipenv shell` & `pipenv install`
 
 ### 1.2.2. Windows
-Clone this repo and open the directory. TODO: add more
+Make sure you have Anaconda installed [installation page](https://docs.anaconda.com/anaconda/install/windows/)
+
+Clone this repo and open the directory. Use `pipenv shell` & `pipenv install` or manually install the dependencies in the pipfile.
+
+Using the conda terminal run: `pip install streamlit`, test that it worked with `streamlit hello`. Use the anaconda navigator to open a terminal in the environment.
 
 ## 1.3. Starting the application
 To run the app simply execute `streamlit run ./src/main.py`
@@ -36,14 +40,14 @@ To create a new page you need to add a new file to the `src/pages` folder. An ex
         import streamlit as st
         import pandas as pd
 
+        # This wil show a h1 header at the top of the page
         st.header('An example text for analysis one page')
 
-        # this is needed to get the data_file from the session storage.
-        # The StringIO converts the stored string to a file pandas can use.
-        if 'data_file' in st.session_state:
-            file = StringIO(st.session_state['data_file'])
+        # this is needed to load the cleaned data from the session storage
+        if 'cleaned_data' in st.session_state:
+            df = st.session_state['cleaned_data']
 
-            df = pd.read_csv(file)
+            # display the dataframe as a table
             st.write(df)
 
 
@@ -53,7 +57,7 @@ To create a new page you need to add a new file to the `src/pages` folder. An ex
     # example_page.py
 
 ### 1.4.2. Accessing the uploaded data
-To acces the data that the user uploaded you have to use the following code:
+To acces the file that the user uploaded you have to use the following code:
 
     # this is needed to get the data_file from the session storage.
     # The StringIO converts the stored string to a file pandas can use.
@@ -63,3 +67,11 @@ To acces the data that the user uploaded you have to use the following code:
         df = pd.read_csv(file)
         st.write(df)
 the StringIO makes a file from a string so that you can use it pandas.
+
+To acces the processed data the following snippet can be used:
+
+    # this is needed to load the cleaned data from the session storage
+    if 'cleaned_data' in st.session_state:
+        df = st.session_state['cleaned_data']
+
+        st.write(df)
