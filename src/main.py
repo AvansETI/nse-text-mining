@@ -1,11 +1,13 @@
 from io import StringIO
 import streamlit as st
 import pandas as pd
-
-from tools.data.preprocessing import clean, replace_empty_with_placeholder_empty, spell_check_data
-# import numpy as np
+from draw_queue import DrawQueue, Follower
+from tools.data.preprocessing import clean, spell_check_data
 
 st.set_page_config(layout="wide")
+
+# define drawing queue
+queue = DrawQueue()
 
 # page title and text
 st.title('Avans NSE Analysis')
@@ -29,11 +31,13 @@ def draw_file_upload():
         # convert the stored file string to an file pandas can use
         file = StringIO(st.session_state['data_file'])
 
-    # if the file is not none display the preview
+        # if the file is not none display the preview
     if file is not None:
         df = pd.read_csv(file)
         st.caption('Data preview: ')
         st.write(df.head())
+
+        st.multiselect('Select or remove preprocessing steps', queue.get_stages())
 
 
 def draw_preprocessing():
@@ -82,5 +86,12 @@ def draw_preprocessing():
 
 
 # call all drawing functions
-draw_file_upload()
-draw_preprocessing()
+# draw_file_upload
+follower = Follower()
+follower.add_handler('stage_added', lambda event_value: draw_file_upload())
+follower.add_handler('stage_should_draw_changed',
+                     lambda event_value: queue.get_draw_stage(event_value).draw_func())
+
+queue.listen(follower)
+
+queue.add_draw_stage('remove_na', draw_preprocessing)
