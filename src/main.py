@@ -7,7 +7,7 @@ from tools.data.preprocessing import clean, spell_check_data
 st.set_page_config(layout="wide")
 
 # define drawing queue
-queue = PageDrawStack()
+stack = PageDrawStack()
 
 # page title and text
 st.title('Avans NSE Analysis')
@@ -37,7 +37,7 @@ def draw_file_upload():
         st.caption('Data preview: ')
         st.write(df.head())
 
-        queue.set_stage_should_draw_state('clean_data', True)
+        stack.set_stage_should_draw_state('clean_data', True)
 
 
 def draw_cleaning_data():
@@ -60,7 +60,7 @@ def draw_cleaning_data():
             st.dataframe(cleaned_data.head())
 
     # remove items that should always draw and are therefore already drawn
-    stages = list(queue.get_stages())
+    stages = list(stack.get_stages())
     stages.remove('clean_data')
     stages.remove('file_upload')
 
@@ -71,7 +71,7 @@ def draw_cleaning_data():
     # tell queue that the selected items should be drawn
     if st.button('Execute steps'):
         for option in options:
-            queue.set_stage_should_draw_state(option, True)
+            stack.set_stage_should_draw_state(option, True)
 
 
 def draw_spelling_check():
@@ -108,17 +108,17 @@ page = Page('main page')
 # create a handler for the stage_should_draw_changed event,
 # call draw function if should draw = true
 page.add_handler('stage_should_draw_changed',
-                 lambda event_value: queue.get_draw_stage(event_value['stage_name']).draw_func() if event_value['state'] else None)
+                 lambda event_value: stack.get_draw_stage(event_value['stage_name']).draw_func() if event_value['state'] else None)
 
-# subscribe to queue
-queue.listen(page)
+# subscribe to stack
+stack.listen(page)
 
 # always draw file upload
-queue.add_draw_stage('file_upload', draw_file_upload, should_draw=True)
+stack.add_draw_stage('file_upload', draw_file_upload, should_draw=True)
 
 # conditional draws
-queue.add_draw_stage('clean_data', draw_cleaning_data)
-queue.add_draw_stage('spelling_check', draw_spelling_check)
-queue.add_draw_stage('test', draw_test)
+stack.add_draw_stage('clean_data', draw_cleaning_data)
+stack.add_draw_stage('spelling_check', draw_spelling_check)
+stack.add_draw_stage('test', draw_test)
 
-queue.start()
+stack.start()
