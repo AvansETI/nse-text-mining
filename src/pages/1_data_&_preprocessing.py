@@ -1,11 +1,13 @@
 from io import StringIO
 import streamlit as st
 import pandas as pd
-
-from tools.data.preprocessing import clean, replace_empty_with_placeholder_empty, spell_check_data
-# import numpy as np
+from draw_stack import Page, PageDrawStack
+from tools.data.preprocessing import clean, spell_check_data
 
 st.set_page_config(layout="wide")
+
+# define drawing queue
+stack = PageDrawStack()
 
 # page title and text
 st.title('Avans NSE Analysis')
@@ -29,17 +31,17 @@ def draw_file_upload():
         # convert the stored file string to an file pandas can use
         file = StringIO(st.session_state['data_file'])
 
-    # if the file is not none display the preview
+        # if the file is not none display the preview
     if file is not None:
         df = pd.read_csv(file)
         st.caption('Data preview: ')
         st.write(df.head())
 
+        stack.set_stage_should_draw_state('clean_data', True)
 
-def draw_preprocessing():
+
+def draw_cleaning_data():
     st.subheader('Preprocessing the data')
-
-    cleaned_data = None
 
     if 'data_file' in st.session_state:
         data = pd.read_csv(StringIO(st.session_state['data_file']))
@@ -51,16 +53,32 @@ def draw_preprocessing():
                                     ], exclude=True)
         st.session_state['cleaned_data'] = cleaned_data
 
-    with st.expander('Cleaning the data'):
-        st.caption("""In this step all empty values are set to \'empty_field\',
-            punctuation is removed and the text is converted to lower case.""")
+        with st.expander('Cleaning the data'):
+            st.caption("""In this step all empty values are set to \'empty_field\',
+                punctuation is removed and the text is converted to lower case.""")
 
-        # Only continue drawing after the data is processed
-        if cleaned_data is not None:
             st.dataframe(cleaned_data.head())
 
+    # remove items that should always draw and are therefore already drawn
+    stages = list(stack.get_stages())
+    stages.remove('clean_data')
+    stages.remove('file_upload')
+
+    # load a multiselect with all options except the defaults
+    options = st.multiselect('Select or remove preprocessing steps', options=stages,
+                             default=stages)
+
+    # tell queue that the selected items should be drawn
+    if st.button('Execute steps'):
+        for option in options:
+            stack.set_stage_should_draw_state(option, True)
+
+
+def draw_spelling_check():
+    cleaned_data = st.session_state['cleaned_data']
+
     with st.expander('Spelling check'):
-        st.caption('In this step the answers are checken on spelling mistakes.')
+        st.caption('In this step the answers are checked for spelling mistakes.')
 
         if cleaned_data is not None:
             result = {}
@@ -71,16 +89,30 @@ def draw_preprocessing():
                                                          'Opleidingsvorm (vt dt du)', 'Academie', 'Studiejaar volgens instelling',
                                                          'Kunstopleiding', 'Afstandsonderwijs',
                                                          ], exclude=True)
-                # st.write(result)
-                number_of_errors = [len(result[key]) for key in result]
 
-                for i, key in enumerate(result):
-                    st.caption(f'Language: {key}, errors: {number_of_errors[i]}')
-                    st.dataframe(pd.DataFrame(columns=['error'], data=result[key]), use_container_width=True)
-
-                st.success(f'Done. Found {sum(number_of_errors)} spelling errors.')
+                st.json(result)
 
 
-# call all drawing functions
-draw_file_upload()
-draw_preprocessing()
+def draw_test():
+    st.header('test!')
+
+
+# create a follower for the queue
+page = Page('main page')
+# create a handler for the stage_should_draw_changed event,
+# call draw function if should draw = true
+page.add_handler('stage_should_draw_changed',
+                 lambda event_value: stack.get_draw_stage(event_value['stage_name']).draw_func() if event_value['state'] else None)
+
+# subscribe to stack
+stack.listen(page)
+
+# always draw file upload
+stack.add_draw_stage('file_upload', draw_file_upload, should_draw=True)
+
+# conditional draws
+stack.add_draw_stage('clean_data', draw_cleaning_data)
+stack.add_draw_stage('spelling_check', draw_spelling_check)
+stack.add_draw_stage('test', draw_test)
+
+stack.start()
