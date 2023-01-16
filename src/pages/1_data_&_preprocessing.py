@@ -3,7 +3,6 @@ import streamlit as st
 import pandas as pd
 from draw_stack import Page, PageDrawStack
 from tools.data.preprocessing import clean, spell_check_data
-from annotated_text import annotated_text
 
 st.set_page_config(layout="wide")
 
