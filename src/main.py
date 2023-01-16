@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 from draw_stack import Page, PageDrawStack
 from tools.data.preprocessing import clean, spell_check_data
+from annotated_text import annotated_text
 
 st.set_page_config(layout="wide")
 
@@ -78,7 +79,7 @@ def draw_spelling_check():
     cleaned_data = st.session_state['cleaned_data']
 
     with st.expander('Spelling check'):
-        st.caption('In this step the answers are checken on spelling mistakes.')
+        st.caption('In this step the answers are checked for spelling mistakes.')
 
         if cleaned_data is not None:
             result = {}
@@ -90,13 +91,7 @@ def draw_spelling_check():
                                                          'Kunstopleiding', 'Afstandsonderwijs',
                                                          ], exclude=True)
 
-                number_of_errors = [len(result[key]) for key in result]
-
-                for i, key in enumerate(result):
-                    st.caption(f'Language: {key}, errors: {number_of_errors[i]}')
-                    st.dataframe(pd.DataFrame(columns=['error'], data=result[key]), use_container_width=True)
-
-                st.success(f'Done. Found {sum(number_of_errors)} spelling errors.')
+                st.json(result)
 
 
 def draw_test():

@@ -48,24 +48,28 @@ def check_spelling(data, language, custom_dicts=[]):
 
     # Construct spell checkers for each language
     checkers = [SpellChecker(enchant.DictWithPWL(lang, './src/dicts/ignore.txt')) for lang in language]
-    custom_checkers = [SpellChecker(enchant.PyPWL(dict)) for dict in custom_dicts]
-    checkers = checkers + custom_checkers
+    # custom_checkers = [SpellChecker(enchant.PyPWL(dict)) for dict in custom_dicts]
+    # checkers = checkers + custom_checkers
 
-    # Dictionary containing the errors for each language
-    misspelled = {}
-
-    # flatten the data and split into words,
-    # then check spelling for each language and add results to dict
-    # words = [word for word in (answer for answer in (col for col in data))]
-
-    words = [word for word in (row.split() for row in data)]
-    words = np.hstack(words)
-
+    total_errors = {}
     for checker in checkers:
-        misspelled[checker.lang] = list([word for word in words if not checker.check(word)])
-        # filter(lambda x: x if not x else None,
+        lang_errors = []
 
-    return misspelled
+        for line_index, line in enumerate(data):
+            checker.set_text(line)
+
+            line_errors = []
+            for err in checker:
+                if (err.word) == 'empty':
+                    break
+
+                line_errors.append({'word': err.word, 'pos': err.wordpos})
+
+            lang_errors.append({'line': line_index, 'errors': line_errors})
+
+        total_errors[checker.lang] = lang_errors
+
+    return total_errors
 
 
 def clean(data, columns=[], exclude=True):
@@ -100,14 +104,14 @@ def spell_check_data(data, columns=[], exclude=True, language=['nl-NL', 'en-EN']
     """
     columns_to_use = filter(lambda x: x if (x not in columns and exclude) or (x in columns and not exclude) else None, data.columns)
 
-    all_errors = []
-
+    all_errors = {}
     for column in columns_to_use:
         results = check_spelling(data[column], language, custom_dicts)
-        all_errors.append(results)
 
-    final_dict = {}
-    for result in all_errors:
-        final_dict = final_dict | result
+        for lang in results:
+            lang_errors = all_errors.get(lang, [])
+            lang_errors.append({'col': column, 'errors': results[lang]})
 
-    return final_dict
+            all_errors[lang] = lang_errors
+
+    return all_errors
