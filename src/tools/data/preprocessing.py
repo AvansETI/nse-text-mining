@@ -146,6 +146,7 @@ def redact_phone_numbers(data, columns=[], exclude=True):
                 if found not in redacted.keys():
                     value = value.replace(found, f'[phone-number({index})]')
                     redacted[found] = f'[phone-number({index})]'
+                    index = index + 1
                 else:
                     value = value.replace(found, redacted[found])
 
@@ -180,6 +181,7 @@ def redact_email_addresses(data, columns=[], exclude=True):
                 if found not in redacted.keys():
                     value = value.replace(found, f'[email({index})]')
                     redacted[found] = f'[email({index})]'
+                    index = index + 1
                 else:
                     value = value.replace(found, redacted[found])
 
