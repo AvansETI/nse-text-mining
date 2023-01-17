@@ -2,7 +2,7 @@ from io import StringIO
 import streamlit as st
 import pandas as pd
 from draw_stack import Page, PageDrawStack
-from tools.data.preprocessing import clean, spell_check_data
+from tools.data.preprocessing import clean, redact_email_addresses, redact_phone_numbers, spell_check_data
 
 st.set_page_config(layout="wide")
 
@@ -64,9 +64,12 @@ def draw_cleaning_data():
     stages.remove('clean_data')
     stages.remove('file_upload')
 
+    stages = [stage.replace('_', ' ') for stage in stages]
+
     # load a multiselect with all options except the defaults
     options = st.multiselect('Select or remove preprocessing steps', options=stages,
                              default=stages)
+    options = [option.replace(' ', '_') for option in options]
 
     # tell queue that the selected items should be drawn
     if st.button('Execute steps'):
@@ -93,8 +96,44 @@ def draw_spelling_check():
                 st.json(result)
 
 
-def draw_test():
-    st.header('test!')
+def phone_number_redaction():
+    cleaned_data = st.session_state['cleaned_data']
+
+    with st.expander('Number redaction'):
+        st.caption("""This step replaces phonenumbers with a reference to protect the privacy of a respondent whilst still retaining information. 
+            You can use this reference to find the associated number if required.""")
+        with st.spinner('Redacting phonenumbers...'):
+            cleaned, redacted = redact_phone_numbers(cleaned_data, ['Jaar', 'Actuele BRIN-code volgens CROHO',
+                                                                    'Actuele naam instelling volgens CROHO', 'Actuele CROHO-code volgens CROHO',
+                                                                    'Actuele Opleidingsnaam volgens CROHO', 'Actuele BRIN-volgnummer volgens CROHO', 'Type Student',
+                                                                    'Opleidingsvorm (vt dt du)', 'Academie', 'Studiejaar volgens instelling',
+                                                                    'Kunstopleiding', 'Afstandsonderwijs',
+                                                                    ], exclude=True)
+
+            st.dataframe(pd.DataFrame(redacted.items(), columns=['redacted_nr', 'reference']), use_container_width=True)
+
+            # set cleaned data for other steps
+            st.session_state['cleaned_data'] = cleaned
+
+
+def email_redaction():
+    cleaned_data = st.session_state['cleaned_data']
+
+    with st.expander('Email address redaction'):
+        st.caption("""This step replaces email addresses with a reference to protect the privacy of a respondent whilst still retaining information. 
+            You can use this reference to find the associated address if required.""")
+        with st.spinner('Redacting email addresses...'):
+            cleaned, redacted = redact_email_addresses(cleaned_data, ['Jaar', 'Actuele BRIN-code volgens CROHO',
+                                                                      'Actuele naam instelling volgens CROHO', 'Actuele CROHO-code volgens CROHO',
+                                                                      'Actuele Opleidingsnaam volgens CROHO', 'Actuele BRIN-volgnummer volgens CROHO', 'Type Student',
+                                                                      'Opleidingsvorm (vt dt du)', 'Academie', 'Studiejaar volgens instelling',
+                                                                      'Kunstopleiding', 'Afstandsonderwijs',
+                                                                      ], exclude=True)
+
+            st.dataframe(pd.DataFrame(redacted.items(), columns=['redacted_email', 'reference']), use_container_width=True)
+
+            # set cleaned data for other steps
+            st.session_state['cleaned_data'] = cleaned
 
 
 # create a follower for the queue
@@ -113,6 +152,8 @@ stack.add_draw_stage('file_upload', draw_file_upload, should_draw=True)
 # conditional draws
 stack.add_draw_stage('clean_data', draw_cleaning_data)
 stack.add_draw_stage('spelling_check', draw_spelling_check)
-stack.add_draw_stage('test', draw_test)
+stack.add_draw_stage('phone_number_redaction', phone_number_redaction)
+stack.add_draw_stage('email_redaction', email_redaction)
+
 
 stack.start()
