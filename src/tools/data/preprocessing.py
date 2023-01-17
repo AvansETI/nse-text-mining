@@ -160,7 +160,7 @@ def redact_phone_numbers(data, columns=[], exclude=True):
 
 def redact_email_addresses(data, columns=[], exclude=True):
     """
-    Replaces email addresses (re: [\w-\.]+@([\w-]+\.)+[\w-]{2,4}) with reference ([email(index)])
+    Replaces email addresses (re: ([a-zA-Z0-9_.]+[@]{1}[a-z0-9]+[\.][a-z]+)) with reference ([email(index)])
     """
     email_regex = re.compile(r"([a-zA-Z0-9_.]+[@]{1}[a-z0-9]+[\.][a-z]+)")
 
