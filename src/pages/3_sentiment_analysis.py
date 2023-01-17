@@ -1,9 +1,5 @@
-from io import StringIO
-
-
 def run():
     import streamlit as st
-    import pandas as pd
 
     st.header('An example text for analysis one page')
 
