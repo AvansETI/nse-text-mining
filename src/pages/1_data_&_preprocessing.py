@@ -64,11 +64,13 @@ def draw_cleaning_data():
     stages.remove('clean_data')
     stages.remove('file_upload')
 
-    stages = [stage.replace('_', ' ') for stage in stages]
+    options = [stage.replace('_', ' ') for stage in stages]
+    default = options.copy()
 
     # load a multiselect with all options except the defaults
-    options = st.multiselect('Select or remove preprocessing steps', options=stages,
-                             default=stages)
+    default.remove('spelling check')
+    options = st.multiselect('Select or remove preprocessing steps', options=options,
+                             default=default)
     options = [option.replace(' ', '_') for option in options]
 
     # tell queue that the selected items should be drawn
