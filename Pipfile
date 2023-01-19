@@ -15,6 +15,7 @@ torch = "*"
 matplotlib = "*"
 streamlit-echarts = "*"
 pyecharts = "*"
+wordcloud = "*"
 
 [dev-packages]
 
