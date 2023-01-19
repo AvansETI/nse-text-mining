@@ -17,6 +17,10 @@ st.caption(
     """In this page the answers are analysed for sentiment""")
 
 
+def draw_warning_message():
+    st.warning("You need to preprocess the data first")
+
+
 def draw_pick_analysis_method():
     option = st.selectbox('What method should be used for the sentiment analysis? (default: Textblob)',
                           ('Textblob', 'Vader', 'Transformer'))
@@ -96,8 +100,11 @@ page.add_handler('stage_should_draw_changed',
 
 stack.listen(page)
 
-stack.add_draw_stage('pick_analysis', draw_pick_analysis_method, True)
-stack.add_draw_stage('total_analysis', draw_analysis_total)
-stack.add_draw_stage('per_question_analysis', draw_analysis_per_question)
+if 'cleaned_data' in st.session_state:
+    stack.add_draw_stage('pick_analysis', draw_pick_analysis_method, True)
+    stack.add_draw_stage('total_analysis', draw_analysis_total)
+    stack.add_draw_stage('per_question_analysis', draw_analysis_per_question)
+else:
+    stack.add_draw_stage('message', draw_warning_message, True)
 
 stack.start()
