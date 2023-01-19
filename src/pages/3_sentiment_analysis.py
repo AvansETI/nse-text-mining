@@ -4,6 +4,8 @@ from tools.data.sentiment import get_sentiment_of_dataset
 from pyecharts import options as opts
 from streamlit_echarts import st_echarts
 
+from tools.ui.charts import get_pie_chart_options
+
 # define drawing queue
 stack = PageDrawStack()
 
@@ -66,47 +68,7 @@ def draw_analysis_total():
             col1.metric("positive", positive, positive - negative)
             col2.metric("negative", negative, negative - positive)
 
-            options = {
-                'legend': {
-                    'orient': 'vertical',
-                    'x': 'left',
-                    'y': 'bottom',
-                    'data': ['positive', 'negative'],
-                    'textStyle': {
-                        'color': '#FFFFFF'
-                        },
-                    },
-                'series': [
-                    {
-                        'type': 'pie',
-                        'color': [
-                            '#C20030',
-                            '#0D1117'
-                            ],
-                        'radius': ['50%', '70%'],
-                        'avoidLabelOverlap': False,
-                        'label': {
-                            'show': False,
-                            'position': 'center'
-                            },
-                        'labelLine': {
-                            'show': False
-                            },
-                        'emphasis': {
-                            'label': {
-                                'show': True,
-                                'fontSize': '20',
-                                'fontWeight': 'bold',
-                                'color': 'white'
-                                }
-                            },
-                        'data': [
-                            {'name': 'positive', 'value': positive},
-                            {'name': 'negative', 'value': negative}
-                            ]
-                        },
-                    ]
-                }
+            options = get_pie_chart_options(['positive', 'negative'], {'positive': positive, 'negative': negative})
             st_echarts(options=options, height='250px')
 
 
