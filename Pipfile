@@ -7,6 +7,16 @@ name = "pypi"
 streamlit = "*"
 pyenchant = "*"
 st-annotated-text = "*"
+textblob-nl = "*"
+vader-multi = "*"
+transformers = "*"
+tensorflow = "*"
+torch = "*"
+matplotlib = "*"
+streamlit-echarts = "*"
+pyecharts = "*"
+wordcloud = "*"
+nltk = "*"
 
 [dev-packages]
 
