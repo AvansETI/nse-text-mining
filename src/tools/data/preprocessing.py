@@ -6,6 +6,9 @@ import enchant
 import numpy as np
 from tools.utils.value_checks import is_number
 import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 
 
 def replace_empty_with_placeholder_empty(data):
@@ -192,3 +195,21 @@ def redact_email_addresses(data, columns=[], exclude=True):
     data.update(data_with_columns)
 
     return (data, redacted)
+
+
+def remove_stop_words(data, columns=[], exclude=True):
+    data_with_columns = data.drop(columns, axis=1) if exclude else data[columns]
+
+    # make sure files are downloaded
+    nltk.download('stopwords')
+    nltk.download('punkt')
+
+    stop = stopwords.words('dutch')
+    pat = r'\b(?:{})\b'.format('|'.join(stop))
+
+    for col_label in data_with_columns:
+        data_with_columns[col_label] = data_with_columns[col_label].str.replace(pat, '')
+
+    data.update(data_with_columns)
+
+    return data

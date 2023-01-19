@@ -2,7 +2,7 @@ from io import StringIO
 import streamlit as st
 import pandas as pd
 from draw_stack import Page, PageDrawStack
-from tools.data.preprocessing import clean, redact_email_addresses, redact_phone_numbers, spell_check_data
+from tools.data.preprocessing import clean, redact_email_addresses, redact_phone_numbers, spell_check_data, remove_stop_words
 
 st.set_page_config(layout="wide")
 
@@ -138,7 +138,22 @@ def email_redaction():
             st.session_state['cleaned_data'] = cleaned
 
 
-# create a follower for the queue
+def remove_stopwords():
+    data = st.session_state['cleaned_data']
+    with st.expander("Removing stopwords"):
+        with st.spinner("Removing stopwords"):
+            result = remove_stop_words(data, columns=['Jaar', 'Actuele BRIN-code volgens CROHO',
+                                                      'Actuele naam instelling volgens CROHO', 'Actuele CROHO-code volgens CROHO',
+                                                      'Actuele Opleidingsnaam volgens CROHO', 'Actuele BRIN-volgnummer volgens CROHO', 'Type Student',
+                                                      'Opleidingsvorm (vt dt du)', 'Academie', 'Studiejaar volgens instelling',
+                                                      'Kunstopleiding', 'Afstandsonderwijs',
+                                                      ], exclude=True)
+
+            st.session_state['cleaned_data'] = result
+            st.success("Stopwords removed.")
+
+
+    # create a follower for the queue
 page = Page('main page')
 # create a handler for the stage_should_draw_changed event,
 # call draw function if should draw = true
@@ -154,6 +169,8 @@ stack.add_draw_stage('file_upload', draw_file_upload, should_draw=True)
 # conditional draws
 stack.add_draw_stage('clean_data', draw_cleaning_data)
 stack.add_draw_stage('spelling_check', draw_spelling_check)
+stack.add_draw_stage('remove_stopwords', remove_stopwords)
+
 stack.add_draw_stage('phone_number_redaction', phone_number_redaction)
 stack.add_draw_stage('email_redaction', email_redaction)
 
