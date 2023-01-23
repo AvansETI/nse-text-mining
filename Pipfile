@@ -1,0 +1,27 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+streamlit = "*"
+pyenchant = "*"
+st-annotated-text = "*"
+textblob-nl = "*"
+vader-multi = "*"
+transformers = "*"
+tensorflow = "*"
+torch = "*"
+matplotlib = "*"
+streamlit-echarts = "*"
+pyecharts = "*"
+wordcloud = "*"
+nltk = "*"
+sklearn = "*"
+scikit-learn = "*"
+seaborn = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
