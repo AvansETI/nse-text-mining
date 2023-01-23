@@ -10,6 +10,9 @@ def run():
     st.subheader('Proof of concept')
     st.markdown('In this proof of concept, several methods have been developed to demonstrate that, with the help of text mining, the processing of open answers can be made easier. This proof of concept also shows that the results of these methods are reliable and can possibly be used for scoring academies in the future.')
 
+    if st.button(''):
+        st.balloons()
+
 
 if __name__ == "__main__":
     run()

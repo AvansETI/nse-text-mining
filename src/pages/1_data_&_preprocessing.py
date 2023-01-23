@@ -153,7 +153,7 @@ def remove_stopwords():
             st.success("Stopwords removed.")
 
 
-    # create a follower for the queue
+# create a follower for the queue
 page = Page('main page')
 # create a handler for the stage_should_draw_changed event,
 # call draw function if should draw = true
