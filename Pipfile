@@ -17,6 +17,9 @@ streamlit-echarts = "*"
 pyecharts = "*"
 wordcloud = "*"
 nltk = "*"
+sklearn = "*"
+scikit-learn = "*"
+seaborn = "*"
 
 [dev-packages]
 
