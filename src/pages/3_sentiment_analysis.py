@@ -1,5 +1,7 @@
+import math
 import streamlit as st
 from draw_stack import Page, PageDrawStack
+from tools.data.collocation import get_bigram_grid
 from tools.data.sentiment import get_sentiment_of_dataset
 from pyecharts import options as opts
 from streamlit_echarts import st_echarts
@@ -24,7 +26,10 @@ def draw_warning_message():
 def draw_pick_analysis_method():
     option = st.selectbox('What method should be used for the sentiment analysis? (default: Textblob)',
                           ('Textblob', 'Vader', 'Transformer'))
-    st.info('The method may impact findings. For example: vader uses a translate API, which may impact the score.', icon='ℹ️')
+
+    st.info("""The method may impact findings. For example: vader uses a translate API,
+    which may impact the score. It is recommended to use the default.""", icon='ℹ️')
+
     if st.button('Execute'):
         st.session_state['sentiment_method'] = option
 
@@ -33,6 +38,9 @@ def draw_pick_analysis_method():
 
 
 def draw_analysis_total():
+    def safe_division(a, b):
+        return b and round(a / b, 2) or 0
+
     method = st.session_state['sentiment_method']
     data = st.session_state['cleaned_data']
 
@@ -60,12 +68,14 @@ def draw_analysis_total():
             conclusion = reponses[0] if positive > negative else reponses[1]
 
             st.markdown(f"""
-            Of the respondends {(positive / (positive + negative)) * 100}% of their answers where positive, compared to {(negative / (positive + negative)) * 100}%
+            Of the respondends {safe_division(positive, (positive + negative)) * 100}% of their answers where positive,
+            compared to {safe_division(negative, (positive + negative)) * 100}%
             negative. {conclusion}. The following questions seemed to lead to the most negative responses {'{placeholder}'}. The questions {'{placeholder}'} seemed to have mostly positive responses.
             """)
 
             st.markdown(f"""
-            The following themes seem to cause the negative responses and could be improved upon: {'{placeholder}'}. The following themes are seen as positive {'placeholder'}.
+            The following themes seem to cause the negative responses and could be improved upon: {'{placeholder}'}.
+            The following themes are seen as positive {'placeholder'}.
             """)
 
             col1, col2 = st.columns(2)
@@ -78,6 +88,7 @@ def draw_analysis_total():
 
 def draw_analysis_per_question():
     sentiment_analysis = st.session_state['sentiment_analysis']
+    data = st.session_state['cleaned_data']
 
     with st.expander('Per question'):
         for label in sentiment_analysis.keys():
@@ -86,9 +97,16 @@ def draw_analysis_per_question():
 
             st.subheader(label)
 
+            st.caption('Sentiment')
+
             col1, col2 = st.columns(2)
             col1.metric("positive", positive, positive - negative)
             col2.metric("negative", negative, negative - positive)
+
+            st.caption('Collocation')
+
+            bigram = get_bigram_grid(data[label])
+            # st.write(data[label].head())
 
 
 # create a follower for the queue

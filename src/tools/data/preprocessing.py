@@ -205,6 +205,7 @@ def remove_stop_words(data, columns=[], exclude=True):
     nltk.download('punkt')
 
     stop = stopwords.words('dutch')
+    stop.append("emptyfield")
     pat = r'\b(?:{})\b'.format('|'.join(stop))
 
     for col_label in data_with_columns:
