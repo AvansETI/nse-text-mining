@@ -31,40 +31,54 @@ Clone this repo and open the directory. Use `pipenv shell` & `pipenv install` or
 Using the conda terminal run: `pip install streamlit`, test that it worked with `streamlit hello`. Use the anaconda navigator to open a terminal in the environment.
 
 ## 1.4. Starting the application
-To run the app simply execute `streamlit run ./src/main.py`
+To run the app simply execute `streamlit run ./src/about.py`
 
 ## 1.5. Creating a new page
 
 ### 1.5.1. The page file
 To create a new page you need to add a new file to the `src/pages` folder. An example of what it would look like:
 
-    from io import StringIO
+    # define drawing stack
+    stack = PageDrawStack()
 
-    def run():
-        import streamlit as st
-        import pandas as pd
+    # always shown
+    st.title('Example page')
+    st.balloons()
 
-        # This wil show a h1 header at the top of the page
-        st.header('An example text for analysis one page')
-
-        # this is needed to load the cleaned data from the session storage
-        if 'cleaned_data' in st.session_state:
-            df = st.session_state['cleaned_data']
-
-            # display the dataframe as a table
-            st.write(df)
-
-
-    if __name__ == "__main__":
-        run()
+    #draw method - will be drawn by draw stack
+    def draw_expander():
+        st.expander("this is an expander"):
+            st.text("cool right")
+            if st.button():
+                stack.set_stage_should_draw_state('btn', True)
     
+    def draw_after_btn():
+        st.text('now you see me')
+
+    # create a follower for the queue
+    page = Page('Example page')
+
+    # create a handler for the stage_should_draw_changed event,
+    # call draw function if should draw = true
+    page.add_handler('stage_should_draw_changed',
+                    lambda event_value: stack.get_draw_stage(event_value['stage_name']).draw_func() if event_value['state'] else None)
+
+    # have the page listen to events on the draw stack
+    stack.listen(page)
+
+    # will draw because should_draw=True
+    stack.add_draw_stage('expander', draw_expander, should_draw=True)
+
+    # will only draw after button click
+    stack.add_draw_stage('btn', draw_after_btn)
+
     # example_page.py
 
 ### 1.5.2. Accessing the uploaded data
 To acces the file that the user uploaded you have to use the following code:
 
     # this is needed to get the data_file from the session storage.
-    # The StringIO converts the stored string to a file pandas can use.
+    # The StringIO converts the stored string to a file pandas can use. You probably don't need to use this. Use the cleaned_data instead.
     if 'data_file' in st.session_state:
         file = StringIO(st.session_state['data_file'])
 
